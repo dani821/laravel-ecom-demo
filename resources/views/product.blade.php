@@ -1,0 +1,95 @@
+@extends('layout')
+
+@section('title', $product->name)
+
+@section('content')
+
+    <div class="container">
+        @if (session()->has('success_message'))
+            <div class="alert alert-success">
+                {{ session()->get('success_message') }}
+            </div>
+        @endif
+
+        @if(count($errors) > 0)
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </div>
+
+    <div class="product-section container">
+        <div>
+            <div class="product-section-image">
+                <img src="{{ productImage($product->image) }}" alt="product" class="active" id="currentImage">
+            </div>
+            <div class="product-section-images">
+                <div class="product-section-thumbnail selected">
+                    <img src="{{ productImage($product->image) }}" alt="product">
+                </div>
+
+                @if ($product->images)
+                    @foreach (json_decode($product->images, true) as $image)
+                    <div class="product-section-thumbnail">
+                        <img src="{{ productImage($image) }}" alt="product">
+                    </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+        <div class="product-section-information">
+            <h1 class="product-section-title">{{ $product->name }}</h1>
+            <div class="product-section-subtitle">{{ $product->details }}</div>
+            <div>{!! $stockLevel !!}</div>
+            <div class="product-section-price"><span>Price : </span>{{ $product->presentPrice() }}</div>
+            <div class="product-section-price"><span>Stock : </span>{{ $product->quantity }}</div>
+            <div class="product-section-price"><span>Competitor brand name : </span>{{ $product->competitor_brand_name }}</div>
+            <div class="product-section-price" style="margin-bottom:10px !important;"><span>Competitor Price : </span>{{ $product->competitor_price }}</div>
+            <div class="product-section-price" style="margin-bottom:5px !important;">Description : </div>
+            <p>
+                {!! $product->description !!}
+            </p>
+
+            <p>&nbsp;</p>
+
+            @if ($product->quantity > 0)
+                <form action="{{ route('cart.store', $product) }}" method="POST">
+                    {{ csrf_field() }}
+                    <button type="submit" class="button button-plain">Add to Cart</button>
+                </form>
+            @endif
+        </div>
+    </div> <!-- end product-section -->
+
+    
+
+@endsection
+
+@section('extra-js')
+    <script>
+        (function(){
+            const currentImage = document.querySelector('#currentImage');
+            const images = document.querySelectorAll('.product-section-thumbnail');
+
+            images.forEach((element) => element.addEventListener('click', thumbnailClick));
+
+            function thumbnailClick(e) {
+                currentImage.classList.remove('active');
+
+                currentImage.addEventListener('transitionend', () => {
+                    currentImage.src = this.querySelector('img').src;
+                    currentImage.classList.add('active');
+                })
+
+                images.forEach((element) => element.classList.remove('selected'));
+                this.classList.add('selected');
+            }
+
+        })();
+    </script>
+
+@endsection
